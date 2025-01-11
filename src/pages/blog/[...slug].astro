@@ -1,5 +1,6 @@
 ---
 import { getCollection } from 'astro:content';
+import { Image } from 'astro:assets';
 import Layout from '../../layouts/Layout.astro';
 import TableOfContents from '../../components/TableOfContents.astro';
 import AuthorCard from '../../components/AuthorCard.astro';
@@ -28,7 +29,7 @@ const articleSchema = {
   "@type": "Article",
   "headline": post.data.title,
   "description": post.data.description,
-  "image": post.data.image,
+  "image": post.data.image.src,
   "datePublished": post.data.pubDate.toISOString(),
   "dateModified": post.data.updatedDate?.toISOString() || post.data.pubDate.toISOString(),
   "author": {
@@ -41,7 +42,7 @@ const articleSchema = {
 <Layout 
   title={post.data.title}
   description={post.data.description}
-  image={post.data.image}
+  image={post.data.image.src}
   article={true}
 >
   <script type="application/ld+json" set:html={JSON.stringify(articleSchema)} />
@@ -81,9 +82,11 @@ const articleSchema = {
 
       <!-- Featured Image -->
       <div class="relative aspect-video mb-8 rounded-xl overflow-hidden">
-        <img 
+        <Image 
           src={post.data.image}
           alt={post.data.title}
+          width={1200}
+          height={675}
           class="object-cover w-full h-full"
         />
       </div>

@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { getCollection } from 'astro:content';
+import { Image } from 'astro:assets';
 import PostCard from '../components/PostCard.astro';
 import CategoryList from '../components/CategoryList.astro';
 
@@ -19,9 +20,10 @@ const featuredPost = sortedPosts[0];
       <a href={`/blog/${featuredPost.slug}`} class="block group">
         <div class="grid md:grid-cols-2 gap-8 items-center">
           <div class="relative aspect-video overflow-hidden rounded-xl">
-            <img 
-              src={featuredPost.data.image} 
+            <Image 
+              src={featuredPost.data.image}
               alt={featuredPost.data.title}
+             
               class="object-cover w-full h-full transition-transform group-hover:scale-105"
             />
           </div>

@@ -1,13 +1,16 @@
 ---
+import { Image } from 'astro:assets';
 const { post } = Astro.props;
 ---
 
 <article class="group">
   <a href={`/blog/${post.slug}`} class="block">
     <div class="relative aspect-video overflow-hidden rounded-xl mb-4">
-      <img 
-        src={post.data.image} 
+      <Image 
+        src={post.data.image}
         alt={post.data.title}
+        width={800}
+        height={450}
         class="object-cover w-full h-full transition-transform group-hover:scale-105"
       />
     </div>
