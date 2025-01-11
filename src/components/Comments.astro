@@ -1,0 +1,83 @@
+---
+const { slug } = Astro.props;
+---
+
+<section class="mt-16 bg-white dark:bg-tech-dark rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+  <h2 class="text-2xl font-bold mb-8 text-tech-dark dark:text-gray-200">Comments</h2>
+  <div 
+    id="comments"
+    class="giscus"
+  >
+    <!-- Giscus will inject the comments here -->
+  </div>
+</section>
+
+<script>
+  function loadComments() {
+    const giscusConfig = {
+      src: 'https://giscus.app/client.js',
+      'data-repo': 'enough-jainil/doreturn.in',
+      'data-repo-id': 'YOUR_REPOSITORY_ID',
+      'data-category': 'Comments',
+      'data-category-id': 'YOUR_CATEGORY_ID',
+      'data-mapping': 'pathname',
+      'data-strict': '0',
+      'data-reactions-enabled': '1',
+      'data-emit-metadata': '0',
+      'data-input-position': 'bottom',
+      'data-theme': localStorage.getItem('theme') === 'dark' ? 'dark' : 'light',
+      'data-lang': 'en',
+      crossorigin: 'anonymous',
+      async: true
+    };
+
+    // Remove existing script if it exists
+    const existingScript = document.querySelector('script.giscus-script');
+    if (existingScript) {
+      existingScript.remove();
+    }
+
+    // Remove existing iframe if it exists
+    const existingFrame = document.querySelector('.giscus-frame');
+    if (existingFrame) {
+      existingFrame.remove();
+    }
+
+    // Create and append new script
+    const script = document.createElement('script');
+    Object.entries(giscusConfig).forEach(([key, value]) => {
+      script.setAttribute(key, value);
+    });
+    script.classList.add('giscus-script');
+    
+    const commentsDiv = document.getElementById('comments');
+    if (commentsDiv) {
+      commentsDiv.appendChild(script);
+    }
+  }
+
+  // Load comments on initial page load
+  loadComments();
+
+  // Reload comments after view transitions
+  document.addEventListener('astro:page-load', loadComments);
+
+  // Update theme when it changes
+  document.addEventListener('theme-changed', () => {
+    const iframe = document.querySelector('iframe.giscus-frame');
+    if (iframe) {
+      const theme = localStorage.getItem('theme') === 'dark' ? 'dark' : 'light';
+      iframe.contentWindow.postMessage(
+        { giscus: { setConfig: { theme } } },
+        'https://giscus.app'
+      );
+    }
+  });
+</script>
+
+<style>
+  .utterances-frame {
+    margin-left: -8px;
+    margin-right: -8px;
+  }
+</style> 
