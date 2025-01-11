@@ -60,11 +60,11 @@ const articleSchema = {
             </a>
           ))}
         </div>
-        <h1 class="text-4xl md:text-5xl font-bold mb-4">{post.data.title}</h1>
-        <p class="text-xl text-gray-600 dark:text-gray-400 mb-4">
+        <h1 class="text-4xl md:text-5xl font-bold mb-4 text-tech-dark dark:text-gray-200">{post.data.title}</h1>
+        <p class="text-xl text-tech-secondary dark:text-gray-400 mb-4">
           {post.data.description}
         </p>
-        <div class="flex items-center text-sm text-gray-500 dark:text-gray-400">
+        <div class="flex items-center text-sm text-tech-secondary dark:text-gray-400">
           <span>{post.data.author}</span>
           <span class="mx-2">•</span>
           <time datetime={post.data.pubDate.toISOString()}>
@@ -89,19 +89,19 @@ const articleSchema = {
       </div>
 
       <!-- Table of Contents -->
-      <aside class="mb-8 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+      <aside class="mb-8 p-4 bg-white dark:bg-tech-dark rounded-lg border border-gray-200 dark:border-gray-700">
         <TableOfContents headings={headings} />
       </aside>
 
       <!-- Article Content -->
-      <div class="prose dark:prose-invert prose-lg max-w-none">
+      <div class="prose dark:prose-invert prose-lg max-w-none prose-headings:text-tech-dark dark:prose-headings:text-gray-200 prose-a:text-tech-primary hover:prose-a:text-tech-secondary">
         <Content />
       </div>
 
       <!-- Author Bio -->
       {author && (
-        <section class="mt-16 ">
-          <h2 class="text-2xl font-bold mb-4">About the Author</h2>
+        <section class="mt-16 border border-gray-200 dark:border-gray-700 rounded-lg">
+          <h2 class="text-2xl font-bold mb-4 p-4 text-tech-dark dark:text-gray-200">About the Author</h2>
           <AuthorCard author={author} />
         </section>
       )}
