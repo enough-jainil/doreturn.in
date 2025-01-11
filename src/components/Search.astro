@@ -1,0 +1,92 @@
+<style>
+  /* Hide default clear button in search input */
+  input[type="search"]::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+    appearance: none;
+  }
+</style>
+
+<div class="relative flex-1 max-w-lg mx-4" x-data="{ 
+  searchQuery: '',
+  showResults: false,
+  searchResults: [],
+  clearSearch() {
+    this.searchQuery = '';
+    this.searchResults = [];
+    this.showResults = false;
+  },
+  async search() {
+    if (this.searchQuery.length < 2) {
+      this.searchResults = [];
+      return;
+    }
+    const response = await fetch('/search-index.json');
+    const posts = await response.json();
+    const fuse = new Fuse(posts, {
+      keys: ['title', 'description', 'categories', 'content'],
+      threshold: 0.3,
+      ignoreLocation: true,
+    });
+    this.searchResults = fuse.search(this.searchQuery).slice(0, 5);
+    this.showResults = true;
+  }
+}">
+  <div class="relative">
+    <input
+      type="search"
+      x-model="searchQuery"
+      @input.debounce.300ms="search()"
+      @focus="showResults = true"
+      @click.away="showResults = false"
+      placeholder="Search articles..."
+      class="w-full px-4 py-2 pr-10 rounded-full bg-white dark:bg-tech-dark border border-gray-200 dark:border-gray-700 text-tech-dark dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-tech-primary/50"
+    />
+    
+    <!-- Search Icon (when no input) -->
+    <svg 
+      x-show="!searchQuery"
+      class="absolute right-3 top-2.5 w-5 h-5 text-tech-primary" 
+      fill="none" 
+      stroke="currentColor" 
+      viewBox="0 0 24 24"
+    >
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+    </svg>
+
+    <!-- Clear Icon (x) when there's input -->
+    <button 
+      x-show="searchQuery"
+      @click="clearSearch()"
+      class="absolute right-3 top-2.5 text-tech-primary hover:text-tech-secondary transition-colors"
+    >
+      <span class="sr-only">Clear search</span>
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Search Results Dropdown -->
+  <div
+    x-show="showResults && searchResults.length > 0"
+    x-transition
+    class="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-tech-dark rounded-lg shadow-lg overflow-hidden z-50 border border-gray-200 dark:border-gray-700"
+  >
+    <div class="max-h-96 overflow-y-auto">
+      <template x-for="result in searchResults" :key="result.item.slug">
+        <a
+          :href="`/blog/${result.item.slug}`"
+          class="block p-4 hover:bg-tech-primary/5 dark:hover:bg-tech-primary/10"
+        >
+          <h4 x-text="result.item.title" class="text-sm font-semibold mb-1 text-tech-dark dark:text-gray-200"></h4>
+          <p x-text="result.item.description" class="text-xs text-tech-secondary dark:text-gray-400 line-clamp-2"></p>
+        </a>
+      </template>
+    </div>
+  </div>
+</div>
+
+<script>
+  import Fuse from 'fuse.js';
+  window.Fuse = Fuse;
+</script>
