@@ -1,0 +1,39 @@
+---
+const { post } = Astro.props;
+---
+
+<article class="group">
+  <a href={`/blog/${post.slug}`} class="block">
+    <div class="relative aspect-video overflow-hidden rounded-xl mb-4">
+      <img 
+        src={post.data.image} 
+        alt={post.data.title}
+        class="object-cover w-full h-full transition-transform group-hover:scale-105"
+      />
+    </div>
+    <div class="flex gap-2 mb-3">
+      {post.data.categories.map(category => (
+        <span class="px-3 py-1 text-sm rounded-full bg-tech-primary/10 text-tech-primary">
+          {category}
+        </span>
+      ))}
+    </div>
+    <h3 class="text-xl font-bold mb-2 group-hover:text-tech-primary transition-colors">
+      {post.data.title}
+    </h3>
+    <p class="text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
+      {post.data.description}
+    </p>
+    <div class="flex items-center text-sm text-gray-500 dark:text-gray-400">
+      <time datetime={post.data.pubDate.toISOString()}>
+        {post.data.pubDate.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        })}
+      </time>
+      <span class="mx-2">•</span>
+      <span>{post.data.readingTime} min read</span>
+    </div>
+  </a>
+</article>

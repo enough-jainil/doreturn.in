@@ -1,0 +1,40 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+
+const posts = await getCollection('blog');
+const categories = [...new Set(posts.flatMap(post => post.data.categories))];
+const categoryCounts = categories.map(category => ({
+  name: category,
+  count: posts.filter(post => 
+    post.data.categories.map(c => c.toLowerCase()).includes(category.toLowerCase())
+  ).length
+}));
+---
+
+<Layout 
+  title="Categories - TechAI News"
+  description="Browse all categories and topics covered by TechAI News"
+>
+  <main class="container mx-auto px-4 py-8">
+    <h1 class="text-4xl font-bold mb-8">Categories</h1>
+    
+    <div class="grid gap-6">
+      {categoryCounts.map(({ name, count }) => (
+        <a 
+          href={`/category/${name.toLowerCase()}`}
+          class="group p-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow-md transition-shadow"
+        >
+          <div class="flex items-center justify-between">
+            <h2 class="text-2xl font-semibold group-hover:text-tech-primary transition-colors">
+              {name}
+            </h2>
+            <span class="px-3 py-1 rounded-full bg-tech-primary/10 text-tech-primary text-sm">
+              {count} {count === 1 ? 'article' : 'articles'}
+            </span>
+          </div>
+        </a>
+      ))}
+    </div>
+  </main>
+</Layout>

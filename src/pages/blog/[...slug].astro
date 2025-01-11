@@ -1,0 +1,113 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+import TableOfContents from '../../components/TableOfContents.astro';
+import AuthorCard from '../../components/AuthorCard.astro';
+import RelatedPosts from '../../components/RelatedPosts.astro';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog');
+  return posts.map(post => ({
+    params: { slug: post.slug },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const { Content, headings } = await post.render();
+
+// Get author data
+const authors = await getCollection('authors');
+const author = authors.find(a => 
+  a.id.toLowerCase() === post.data.author.toLowerCase().replace(/\s+/g, '-')
+);
+
+// Schema.org Article structured data
+const articleSchema = {
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": post.data.title,
+  "description": post.data.description,
+  "image": post.data.image,
+  "datePublished": post.data.pubDate.toISOString(),
+  "dateModified": post.data.updatedDate?.toISOString() || post.data.pubDate.toISOString(),
+  "author": {
+    "@type": "Person",
+    "name": post.data.author
+  }
+};
+---
+
+<Layout 
+  title={post.data.title}
+  description={post.data.description}
+  image={post.data.image}
+  article={true}
+>
+  <script type="application/ld+json" set:html={JSON.stringify(articleSchema)} />
+  
+  <main class="container mx-auto px-4 py-8">
+    <article class="max-w-4xl mx-auto">
+      <!-- Article Header -->
+      <header class="mb-8">
+        <div class="flex gap-2 mb-4">
+          {post.data.categories.map(category => (
+            <a
+              href={`/category/${category.toLowerCase()}`}
+              class="px-3 py-1 text-sm rounded-full bg-tech-primary/10 text-tech-primary hover:bg-tech-primary/20 transition-colors"
+            >
+              {category}
+            </a>
+          ))}
+        </div>
+        <h1 class="text-4xl md:text-5xl font-bold mb-4">{post.data.title}</h1>
+        <p class="text-xl text-gray-600 dark:text-gray-400 mb-4">
+          {post.data.description}
+        </p>
+        <div class="flex items-center text-sm text-gray-500 dark:text-gray-400">
+          <span>{post.data.author}</span>
+          <span class="mx-2">•</span>
+          <time datetime={post.data.pubDate.toISOString()}>
+            {post.data.pubDate.toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            })}
+          </time>
+          <span class="mx-2">•</span>
+          <span>{post.data.readingTime} min read</span>
+        </div>
+      </header>
+
+      <!-- Featured Image -->
+      <div class="relative aspect-video mb-8 rounded-xl overflow-hidden">
+        <img 
+          src={post.data.image}
+          alt={post.data.title}
+          class="object-cover w-full h-full"
+        />
+      </div>
+
+      <!-- Table of Contents -->
+      <aside class="mb-8 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg">
+        <TableOfContents headings={headings} />
+      </aside>
+
+      <!-- Article Content -->
+      <div class="prose dark:prose-invert prose-lg max-w-none">
+        <Content />
+      </div>
+
+      <!-- Author Bio -->
+      {author && (
+        <section class="mt-16 ">
+          <h2 class="text-2xl font-bold mb-4">About the Author</h2>
+          <AuthorCard author={author} />
+        </section>
+      )}
+    </article>
+
+    <!-- Related Posts -->
+    <RelatedPosts currentPost={post} />
+  </main>
+</Layout>

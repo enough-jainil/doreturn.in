@@ -1,0 +1,33 @@
+---
+import { getCollection } from 'astro:content';
+import PostCard from './PostCard.astro';
+
+const { currentPost } = Astro.props;
+
+// Get all posts
+const allPosts = await getCollection('blog');
+
+// Filter out the current post and get posts with matching categories
+const relatedPosts = allPosts
+  .filter(post => post.id !== currentPost.id)
+  .filter(post => 
+    post.data.categories.some(category => 
+      currentPost.data.categories.includes(category)
+    )
+  )
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+  .slice(0, 3);
+---
+
+<section class="mt-16">
+  <h2 class="text-3xl font-bold mb-8">Related Articles</h2>
+  {relatedPosts.length > 0 ? (
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+      {relatedPosts.map(post => (
+        <PostCard post={post} />
+      ))}
+    </div>
+  ) : (
+    <p class="text-gray-600 dark:text-gray-400">No related articles found.</p>
+  )}
+</section>

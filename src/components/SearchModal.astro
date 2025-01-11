@@ -1,0 +1,174 @@
+---
+---
+
+<div
+  id="search-modal"
+  class="fixed inset-0 z-50 hidden bg-black/50 backdrop-blur-sm"
+>
+  <div class="container mx-auto px-4 h-full flex items-center justify-center">
+    <div class="bg-white dark:bg-gray-900 w-full max-w-2xl rounded-lg shadow-xl">
+      <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+        <div class="flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-tech-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <input
+            type="text"
+            id="search-input"
+            class="w-full bg-transparent border-none focus:ring-0 text-lg text-tech-dark dark:text-gray-200"
+            placeholder="Search articles..."
+            autocomplete="off"
+          />
+          <button
+            id="close-search"
+            class="p-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-tech-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="p-4 max-h-[60vh] overflow-y-auto" id="search-results"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  import Fuse from 'fuse.js';
+
+  // Initialize search functionality when the DOM is loaded
+  document.addEventListener('DOMContentLoaded', initSearch);
+
+  async function initSearch() {
+    const searchModal = document.getElementById('search-modal');
+    const searchInput = document.getElementById('search-input');
+    const searchResults = document.getElementById('search-results');
+    const closeButton = document.getElementById('close-search');
+    
+    // Fetch all posts
+    const posts = await fetch('/search-index.json').then(res => res.json());
+    
+    // Initialize Fuse with options
+    const fuse = new Fuse(posts, {
+      keys: [
+        { name: 'title', weight: 1.0 },
+        { name: 'description', weight: 0.6 },
+        { name: 'categories', weight: 0.4 }
+      ],
+      threshold: 0.3,
+      includeMatches: true
+    });
+
+    // Handle keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      // Open search with Cmd+K or Ctrl+K
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        openSearch();
+      }
+      // Close with Escape
+      if (e.key === 'Escape' && searchModal.classList.contains('flex')) {
+        closeSearch();
+      }
+    });
+
+    // Open search modal
+    function openSearch() {
+      searchModal.classList.remove('hidden');
+      searchModal.classList.add('flex');
+      searchInput.focus();
+    }
+
+    // Close search modal
+    function closeSearch() {
+      searchModal.classList.remove('flex');
+      searchModal.classList.add('hidden');
+      searchInput.value = '';
+      searchResults.innerHTML = getInitialContent();
+    }
+
+    // Initial content for the search modal
+    function getInitialContent() {
+      return `
+        <div class="text-center text-tech-secondary dark:text-gray-400">
+          <p class="mb-2">Start typing to search</p>
+          <p class="text-sm">Press <kbd class="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded">ESC</kbd> to close</p>
+        </div>
+      `;
+    }
+
+    // Format search results
+    function formatResults(results) {
+      if (results.length === 0) {
+        return `
+          <div class="text-center text-tech-secondary dark:text-gray-400">
+            <p>No results found</p>
+          </div>
+        `;
+      }
+
+      return results
+        .map(({ item }) => `
+          <a 
+            href="/blog/${item.slug}"
+            class="block p-4 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg mb-2"
+          >
+            <div class="flex items-start gap-4">
+              <img 
+                src="${item.image}" 
+                alt="${item.title}"
+                class="w-16 h-16 object-cover rounded"
+              />
+              <div>
+                <h3 class="font-semibold mb-1 text-tech-dark dark:text-gray-200">${item.title}</h3>
+                <p class="text-sm text-tech-secondary dark:text-gray-400 line-clamp-2">
+                  ${item.description}
+                </p>
+                <div class="flex gap-2 mt-2">
+                  ${item.categories
+                    .map(
+                      cat => `
+                        <span class="text-xs px-2 py-1 bg-tech-primary/10 text-tech-primary rounded-full">
+                          ${cat}
+                        </span>
+                      `
+                    )
+                    .join('')}
+                </div>
+              </div>
+            </div>
+          </a>
+        `)
+        .join('');
+    }
+
+    // Set up event listeners
+    searchInput.addEventListener('input', (e) => {
+      const query = e.target.value;
+      if (query.length === 0) {
+        searchResults.innerHTML = getInitialContent();
+        return;
+      }
+      const results = fuse.search(query);
+      searchResults.innerHTML = formatResults(results);
+    });
+
+    closeButton.addEventListener('click', closeSearch);
+
+    // Close when clicking outside
+    searchModal.addEventListener('click', (e) => {
+      if (e.target === searchModal) {
+        closeSearch();
+      }
+    });
+
+    // Add click event listeners to search buttons
+    document.querySelectorAll('[data-search-trigger]').forEach(button => {
+      button.addEventListener('click', openSearch);
+    });
+
+    // Initialize with empty state
+    searchResults.innerHTML = getInitialContent();
+  }
+</script>

@@ -1,0 +1,17 @@
+---
+import { getCollection } from 'astro:content';
+
+const posts = await getCollection('blog');
+const categories = [...new Set(posts.flatMap(post => post.data.categories))];
+---
+
+<div class="flex flex-wrap gap-2">
+  {categories.map(category => (
+    <a
+      href={`/category/${category.toLowerCase()}`}
+      class="px-4 py-2 rounded-full bg-tech-primary/10 text-tech-primary hover:bg-tech-primary/20 transition-colors"
+    >
+      {category}
+    </a>
+  ))}
+</div>
