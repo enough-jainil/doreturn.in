@@ -23,6 +23,35 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 <!doctype html>
 <html lang="en">
   <head>
+    <script is:inline>
+      // Get theme from localStorage or system preference
+      const getTheme = () => {
+        if (typeof localStorage !== 'undefined' && localStorage.getItem('theme')) {
+          return localStorage.getItem('theme');
+        }
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      };
+
+      // Apply theme immediately to prevent flash
+      const theme = getTheme();
+      document.documentElement.classList[theme === 'dark' ? 'add' : 'remove']('dark');
+
+      // Store the current theme
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem('theme', theme);
+      }
+
+      // Handle system theme changes
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', ({ matches }) => {
+        if (!localStorage.getItem('theme')) {
+          document.documentElement.classList.toggle('dark', matches);
+        }
+      });
+
+      // Make theme available globally
+      window.theme = theme;
+    </script>
+    
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -52,6 +81,21 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
     
     <ViewTransitions />
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script is:inline>
+      const theme = (() => {
+        if (typeof localStorage !== 'undefined' && localStorage.getItem('theme')) {
+          return localStorage.getItem('theme');
+        }
+        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          return 'dark';
+        }
+        return 'light';
+      })();
+
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      }
+    </script>
   </head>
   <body class="min-h-screen bg-gray-50 dark:bg-tech-dark dark:text-gray-100">
     <Header />

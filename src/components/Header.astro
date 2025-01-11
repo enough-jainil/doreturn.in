@@ -1,5 +1,6 @@
 ---
 import Search from './Search.astro';
+import ThemeToggle from './ThemeToggle.astro';
 
 const navItems = [
   { title: 'Home', path: '/' },
@@ -26,8 +27,10 @@ const navItems = [
         ))}
       </nav>
       
-      <!-- Search Component -->
-      <Search />
+      <div class="flex items-center gap-4">
+        <Search />
+        <ThemeToggle />
+      </div>
     </div>
   </div>
 </header>
