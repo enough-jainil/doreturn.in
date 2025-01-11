@@ -5,6 +5,7 @@ import Layout from '../../layouts/Layout.astro';
 import TableOfContents from '../../components/TableOfContents.astro';
 import AuthorCard from '../../components/AuthorCard.astro';
 import RelatedPosts from '../../components/RelatedPosts.astro';
+import ReadingProgress from '../../components/ReadingProgress.astro';
 
 export async function getStaticPaths() {
   const posts = await getCollection('blog');
@@ -45,6 +46,7 @@ const articleSchema = {
   image={post.data.image.src}
   article={true}
 >
+  <ReadingProgress />
   <script type="application/ld+json" set:html={JSON.stringify(articleSchema)} />
   
   <main class="container mx-auto px-4 py-8">
